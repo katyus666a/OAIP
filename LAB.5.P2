@@ -1,10 +1,9 @@
 #include <iostream>
-#include <list>
+#include <vector>
 #include <string>
+#include <Windows.h>
 
 using namespace std;
-
-const int TABLE_SIZE = 15;
 
 struct Surname {
     string name;
@@ -12,57 +11,115 @@ struct Surname {
     int score;
 };
 
-int hashFunction(int place) {
-    return place % TABLE_SIZE;
+// Функция хеширования с двойным хешированием
+int hashFunction(int key, int size) {
+    int hash1 = key % size;
+    int hash2 = 1 + (key % (size - 1));
+    return (hash1 + hash2) % size;
 }
 
-int main() {
-    Surname name[5];
-    name[0] = { "Rusakevich", 200, 1 };
-    name[1] = { "Logunova", 250, 2 };
-    name[2] = { "Plohov", 220, 3 };
-    name[3] = { "Denishik", 240, 4 };
-    name[4] = { "Dubrovskiy", 180, 5 };
-
-    list<Surname> hashTable[TABLE_SIZE];
-
-    for (int i = 0; i < 8; i++) {
-        int index = hashFunction(name[i].place);
-        hashTable[index].push_back(name[i]);
+// Функция для вставки элемента в хеш-таблицу
+void insertElement(vector<Surname>& hashTable, const Surname& surname, int size) {
+    int index = hashFunction(surname.place, size);
+    while (!hashTable[index].name.empty()) {
+        index = (index + hashFunction(surname.place, size - 1)) % size; // Двойное хеширование
     }
+    hashTable[index] = surname;
+}
 
-    cout << "Original array:" << endl;
-    for (int i = 0; i < 8; i++) {
-        cout << name[i].name << " " << name[i].place << " " << name[i].score << endl;
+// Функция для поиска элемента в хеш-таблице
+bool searchElement(const vector<Surname>& hashTable, int place, int size) {
+    setlocale(LC_ALL, "RU");
+    int index = hashFunction(place, size);
+    int originalIndex = index;
+    while (!hashTable[index].name.empty()) {
+        if (hashTable[index].place == place) {
+            cout << "Структура с занятым местом " << place << " найдена в индексе " << index << endl;
+            cout << "Фамилия: " << hashTable[index].name << endl;
+            cout << "Количество очков: " << hashTable[index].score << endl;
+            cout << "Занятое место: " << hashTable[index].place << endl;
+            return true;
+        }
+        index = (index + hashFunction(place, size - 1)) % size; // Двойное хеширование
+        if (index == originalIndex) {
+            break; // Структура не найдена
+        }
     }
+    cout << "Структура с занятым местом " << place << " не найдена" << endl;
+    return false;
+}
 
-    cout << endl << "Hash table:" << endl;
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        cout << i << ": ";
-        for (name it = hashTable[i].begin(); it != hashTable[i].end(); it++) {
-            cout << it->name << " ";
+// Функция для вывода массива структур
+void printArray(const vector<Surname>& surnames) {
+    setlocale(LC_ALL, "RU");
+    cout << "Исходный массив:" << endl;
+    for (const Surname& surname : surnames) {
+        cout << "Фамилия: " << surname.name << endl;
+        cout << "Количество очков: " << surname.score << endl;
+        cout << "Занятое место: " << surname.place << endl;
+        cout << endl;
+    }
+}
+
+// Функция для вывода хеш-таблицы
+void printHashTable(const vector<Surname>& hashTable) {
+    setlocale(LC_ALL, "RU");
+    cout << "Хеш-таблица:" << endl;
+    for (int i = 0; i < hashTable.size(); i++) {
+        cout << "Индекс " << i << ": ";
+        if (!hashTable[i].name.empty()) {
+            cout << "Фамилия: " << hashTable[i].name << ", ";
+            cout << "Количество очков: " << hashTable[i].score << ", ";
+            cout << "Занятое место: " << hashTable[i].place;
+        }
+        else {
+            cout << "Пусто";
         }
         cout << endl;
     }
+}
 
-    int score;
-    cout << endl << "Enter name of production to score: ";
-    cin >> score;
+int main() {
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
+    const int M = 10;
+    const int n = 5;
+    setlocale(LC_ALL, "RU");
 
-    int index = hashFunction(score);
-    bool found = false;
-    for (name it = hashTable[index].begin(); it != hashTable[index].end(); it++) {
-        if (it->year == score) {
-            cout << endl << "Found car:" << endl;
-            cout << it->name << " " << it->score << " " << it->place << endl;
-            found = true;
-            break;
-        }
+    vector<Surname> surnames(n);
+
+    cout << "Введите данные о фамилиях:" << endl;
+    for (int i = 0; i < n; i++) {
+        cout << "Фамилия " << i + 1 << ":" << endl;
+        cout << "Фамилия: ";
+        cin >> surnames[i].name;
+        cout << "Количество очков: ";
+        cin >> surnames[i].score;
+        cout << "Занятое место: ";
+        cin >> surnames[i].place;
+        cout << endl;
     }
 
-    if (!found) {
-        cout << endl << "Surname not found." << endl;
+    vector<Surname> hashTable(M);
+
+    // Вставка элементов в хеш-таблицу
+    for (const Surname& surname : surnames) {
+        insertElement(hashTable, surname, M);
     }
+
+    // Вывод исходного массива
+    printArray(surnames);
+
+    // Вывод хеш-таблицы
+    printHashTable(hashTable);
+
+    // Поиск элемента в хеш-таблице
+    setlocale(LC_ALL, "RU");
+    int searchPlace;
+    cout << "Введите занятое место для поиска: ";
+    cin >> searchPlace;
+    searchElement(hashTable, searchPlace, M);
 
     return 0;
 }
+
