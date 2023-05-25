@@ -1,0 +1,163 @@
+#include <iostream>
+#include <stack>
+#include <string>
+#include <sstream>
+#include <iomanip>
+#include <stdexcept>
+#include <locale>
+
+using namespace std;
+
+bool isOperator(char c) {
+    return (c == '+' || c == '-' || c == '*' || c == '/');
+}
+
+int getOperatorPriority(char op) {
+    if (op == '+' || op == '-')
+        return 1;
+    else if (op == '*' || op == '/')
+        return 2;
+    else
+        return 0;
+}
+
+string convertToRPN(string infix) {
+    stack<char> operators;
+    stringstream rpn;
+    char c;
+
+    for (int i = 0; i < infix.length(); i++) {
+        c = infix[i];
+
+        if (isalnum(c)) {
+            rpn << c;
+            rpn << ' ';
+        }
+        else if (c == '(') {
+            operators.push(c);
+        }
+        else if (c == ')') {
+            while (!operators.empty() && operators.top() != '(') {
+                rpn << operators.top();
+                rpn << ' ';
+                operators.pop();
+            }
+
+            if (!operators.empty() && operators.top() == '(') {
+                operators.pop();
+            }
+        }
+        else if (isOperator(c)) {
+            while (!operators.empty() && getOperatorPriority(operators.top()) >= getOperatorPriority(c)) {
+                rpn << operators.top();
+                rpn << ' ';
+                operators.pop();
+            }
+
+            operators.push(c);
+        }
+    }
+
+    while (!operators.empty()) {
+        rpn << operators.top();
+        rpn << ' ';
+        operators.pop();
+    }
+
+    return rpn.str();
+}
+
+double evaluateRPN(string rpn, double a, double b, double c, double d, double e) {
+    stack<double> operands;
+    stringstream ss(rpn);
+    string token;
+
+    while (ss >> token) {
+        if (isOperator(token[0])) {
+            if (operands.size() < 2) {
+                throw invalid_argument("Invalid RPN expression");
+            }
+
+            double operand2 = operands.top();
+            operands.pop();
+            double operand1 = operands.top();
+            operands.pop();
+
+            switch (token[0]) {
+            case '+':
+                operands.push(operand1 + operand2);
+                break;
+            case '-':
+                operands.push(operand1 - operand2);
+                break;
+            case '*':
+                operands.push(operand1 * operand2);
+                break;
+            case '/':
+                operands.push(operand1 / operand2);
+                break;
+            }
+        }
+        else {
+            if (token == "a") {
+                operands.push(a);
+            }
+            else if (token == "b") {
+                operands.push(b);
+            }
+            else if (token == "c") {
+                operands.push(c);
+            }
+            else if (token == "d") {
+                operands.push(d);
+            }
+            else if (token == "e") {
+                operands.push(e);
+            }
+            else {
+                stringstream tokenStream(token);
+                double operand;
+                if (tokenStream >> operand) {
+                    operands.push(operand);
+                }
+                else {
+                    throw invalid_argument("Invalid RPN expression");
+                }
+            }
+        }
+    }
+
+    if (operands.size() != 1) {
+        throw invalid_argument("Invalid RPN expression");
+    }
+
+    return operands.top();
+}
+
+int main() {
+    setlocale(LC_ALL, "RU");
+
+    double a = 5.6, b = 7.4, c = 8.9, d = 3.1, e = 0.2;
+    string expression = "(a+(b/c-d))*e"; //выражение по заданию
+
+    // Формирование и вычисление ОПЗ
+    string rpn = convertToRPN(expression);
+
+    try {
+        // Вычисление результата
+        double result = evaluateRPN(rpn, a, b, c, d, e);
+
+        // Вывод выражения в постфиксной записи
+        cout << "Выражение в постфиксной записи: " << rpn << endl;
+
+        // Вывод результата с ограниченным количеством десятичных знаков
+        cout << fixed << setprecision(3);
+        cout << "Результат в постфиксной нотации: " << result << endl;
+    }
+    catch (const invalid_argument& e) {
+        // Вывод ошибки в случае некорректного выражения
+        cout << "Ошибка: " << e.what() << endl;
+    }
+
+    return 0;
+}
