@@ -52,4 +52,4 @@ https://1drv.ms/v/s!AgLRl5i9yERW3SZjX2qC3P9wGrpy?e=QfVQzF
 13. Если элемент найден, вывод информации о найденном элементе с помощью объекта cout. Иначе, вывод сообщения о том, что фамилия не найдена.
 14. Возврат 0 из функции main, обозначающий успешное выполнение программы.
 Демонстрация кода:
-https://1drv.ms/v/s!AgLRl5i9yERW3SS6Fn3ezdjY6LbN?e=2E7GEU
+https://1drv.ms/v/s!AgLRl5i9yERW3Sghf0qAwdEvAvDp?e=9HcJ7R
