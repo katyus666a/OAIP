@@ -1,0 +1,68 @@
+#include <iostream>
+#include <list>
+#include <string>
+
+using namespace std;
+
+const int TABLE_SIZE = 15;
+
+struct Surname {
+    string name;
+    int place;
+    int score;
+};
+
+int hashFunction(int place) {
+    return place % TABLE_SIZE;
+}
+
+int main() {
+    Surname name[5];
+    name[0] = { "Rusakevich", 200, 1 };
+    name[1] = { "Logunova", 250, 2 };
+    name[2] = { "Plohov", 220, 3 };
+    name[3] = { "Denishik", 240, 4 };
+    name[4] = { "Dubrovskiy", 180, 5 };
+
+    list<Surname> hashTable[TABLE_SIZE];
+
+    for (int i = 0; i < 8; i++) {
+        int index = hashFunction(name[i].place);
+        hashTable[index].push_back(name[i]);
+    }
+
+    cout << "Original array:" << endl;
+    for (int i = 0; i < 8; i++) {
+        cout << name[i].name << " " << name[i].place << " " << name[i].score << endl;
+    }
+
+    cout << endl << "Hash table:" << endl;
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        cout << i << ": ";
+        for (name it = hashTable[i].begin(); it != hashTable[i].end(); it++) {
+            cout << it->name << " ";
+        }
+        cout << endl;
+    }
+
+    int score;
+    cout << endl << "Enter name of production to score: ";
+    cin >> score;
+
+    int index = hashFunction(score);
+    bool found = false;
+    for (name it = hashTable[index].begin(); it != hashTable[index].end(); it++) {
+        if (it->year == score) {
+            cout << endl << "Found car:" << endl;
+            cout << it->name << " " << it->score << " " << it->place << endl;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << endl << "Surname not found." << endl;
+    }
+
+    return 0;
+}
